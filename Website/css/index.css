@@ -1,0 +1,70 @@
+.TerminalScreen {
+	-moz-background-size: cover; 
+	-o-background-size: cover; 
+	-webkit-background-size: 100%; 
+	background-size: cover; 
+	background-image: url('../images/love.jpg');
+	box-shadow: 0 0 15px 10px #141414; 
+	height: 750px; 
+	margin: 5% 5% 5% 5%; 
+	max-height:100%; 
+	max-width:100%;
+	overflow: hide; 
+	position:relative; 
+	width: 1024px; 
+}
+
+.Header {
+	background-color: #000000; 
+	color: #ffffff;
+	font-size: 25px; 
+	opacity: 0.75; 
+	padding-bottom: 13.5px; 
+	padding-top: 13.5px; 
+	position: absolute; 
+	text-align:center; 
+	top: -25; 
+	width: 1024px; 
+}
+
+.Footer {
+	bottom: -19; 
+	background-color: #000000; 
+	color: #000000;
+	height: 35px; 
+	opacity: 0.75; 
+	position: absolute; 
+	width: 1024px; 
+}
+
+.BadgeLink {
+	background-color: black;
+	color: white;
+	text-decoration: none;
+	padding: 4px 6px;
+	font-family: -apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	line-height: 1.2;
+	display: inline-block;
+	border-radius: 3px;
+}
+
+.Badge {
+	display: inline-block;
+	padding: 2px 3px;
+}
+
+.BadgeLogo {
+	height: 12px;
+	width: auto;
+	position: relative;
+	vertical-align: middle;
+	top: -2px;
+	fill: white;
+}
+
+.BadgeAuthor {
+	display: inline-block;
+	padding: 2px 3px
+}
