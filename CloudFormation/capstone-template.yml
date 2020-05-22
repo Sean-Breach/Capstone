@@ -251,6 +251,8 @@ Resources:
             # Docker Setup
             apt install docker.io -y
             apt-get update -y
+            groupadd docker
+            usermod -aG docker ubuntu
             # Get Hadolint
             wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.17.6/hadolint-Linux-x86_64
             chmod +x /usr/bin/hadolint
