@@ -195,6 +195,8 @@ Resources:
             apt-get update -y
             # Python 3 - Required for Boto
             apt install python3-pip -y
+            # Install JQ for JSON Parsing
+            apt install jq
             # Java Runtime for Jenkins
             apt install default-jdk -y
             # Tidy Used for Jenkins Linting
@@ -242,6 +244,8 @@ Resources:
             apt-get update -y
             # Install Unzip
             apt install unzip
+            # Install JQ for JSON Parsing
+            apt install jq
             # Python, Python 3 and Python 3 Virtual Environment
             apt install python-pip -y
             apt install python3-pip -y
