@@ -1,0 +1,258 @@
+Description: >
+    Sean Breach / Udacity - Capstone Project
+    This template deploys a Jenkins Master Box, a Ubuntu Dev Box and an Amazon EKS Setup
+
+Parameters:
+    EnvironmentName:
+        Default: CapstoneEnvName
+        Description: This the Environment Name for the Capstone Project
+        Type: AWS::SSM::Parameter::Value<String>
+
+Resources:
+    # Network Setup Here
+    VPC: 
+        Properties:
+            CidrBlock: '10.0.0.0/16'
+            EnableDnsHostnames: true
+            Tags: 
+                - Key: Name 
+                  Value: !Ref EnvironmentName
+        Type: AWS::EC2::VPC
+    InternetGateway:
+        Properties:
+            Tags:
+                - Key: Name
+                  Value: !Ref EnvironmentName
+        Type: AWS::EC2::InternetGateway
+    InternetGatewayAttachment:
+        Properties:
+            InternetGatewayId: !Ref InternetGateway
+            VpcId: !Ref VPC
+        Type: AWS::EC2::VPCGatewayAttachment
+    PublicSubnet1: 
+        Properties:
+            AvailabilityZone: !Select [ 0, !GetAZs '' ]
+            CidrBlock: '10.0.0.0/24'
+            MapPublicIpOnLaunch: true
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+            VpcId: !Ref VPC
+        Type: AWS::EC2::Subnet
+    PublicSubnet2: 
+        Properties:
+            AvailabilityZone: !Select [ 0, !GetAZs '' ]
+            CidrBlock: '10.0.0.0/24'
+            MapPublicIpOnLaunch: true
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+            VpcId: !Ref VPC
+        Type: AWS::EC2::Subnet
+    PublicRouteTable:
+        Properties: 
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName} Public Routes
+            VpcId: !Ref VPC
+        Type: AWS::EC2::RouteTable
+    DefaultPublicRoute: 
+        DependsOn: InternetGatewayAttachment
+        Properties: 
+            DestinationCidrBlock: 0.0.0.0/0
+            GatewayId: !Ref InternetGateway
+            RouteTableId: !Ref PublicRouteTable
+        Type: AWS::EC2::Route
+    PublicSubnet1RouteTableAssociation:
+        Properties:
+            RouteTableId: !Ref PublicRouteTable
+            SubnetId: !Ref PublicSubnet1
+        Type: AWS::EC2::SubnetRouteTableAssociation
+    PublicSubnet2RouteTableAssociation:
+        Properties:
+            RouteTableId: !Ref PublicRouteTable
+            SubnetId: !Ref PublicSubnet2
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        
+    # IAM Roles
+    Capstone-EKSClusterRole:
+        Type: AWS::IAM::Role
+        Properties:
+          AssumeRolePolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                - eks.amazonaws.com
+              Action:
+              - sts:AssumeRole
+          ManagedPolicyArns:
+            - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
+    # App Server Setup Here
+    EC2SecGroup:
+        Properties:
+            GroupDescription: Allow http to our Jenkins Server for my IP Only
+            SecurityGroupEgress:
+            - CidrIp: 0.0.0.0/0
+              FromPort: 0
+              IpProtocol: tcp
+              ToPort: 65535
+            - CidrIp: 174.55.63.52/32
+              FromPort: 8080
+              IpProtocol: tcp
+              ToPort: 8080
+            - CidrIp: 174.55.63.52/32
+              FromPort: 22
+              IpProtocol: tcp
+              ToPort: 22
+            SecurityGroupIngress:
+            - CidrIp: 174.55.63.52/32
+              FromPort: 80
+              IpProtocol: tcp
+              ToPort: 80
+            - CidrIp: 174.55.63.52/32
+              FromPort: 8080
+              IpProtocol: tcp
+              ToPort: 8080
+            - CidrIp: 174.55.63.52/32
+              FromPort: 22
+              IpProtocol: tcp
+              ToPort: 22
+            VpcId: !Ref VPC
+        Type: AWS::EC2::SecurityGroup
+    JenkinsInstance:
+      Properties:
+        BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: '8'
+        InstanceType: t2.micro
+        ImageId: ami-09dd2e08d601bff67
+        KeyName: "SBUdacityKP"
+        NetworkInterfaces: 
+          - AssociatePublicIpAddress: "true"
+            DeviceIndex: "0"
+            GroupSet: 
+              - Ref: EC2SecGroup
+            SubnetId: 
+              Ref: "PublicSubnet1"
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            #--Setup Server--
+            apt-get update -y
+            # Python 3 - Required for Boto
+            apt install python3-pip -y
+            # Java Runtime for Jenkins
+            apt install default-jdk -y
+            # Tidy Used for Jenkins Linting
+            apt install tidy -y
+            # Docker Setup
+            apt install docker.io -y
+            # Ansible Setup
+            apt install ansible -y
+            # Boto Setup
+            pip3 install boto
+            # Add Jenkins Key and Source List to Server
+            wget -q -O - https://pkg.Jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+            sh -c "echo 'deb https://pkg.jenkins.io/debian-stable binary/' > /etc/apt/sources.list.d/jenkins.list"
+            apt-get update
+            # Start Jenkins and Setup to Run when Ubunto Starts
+            apt install jenkins -y
+            # Adding Jenkins to the Docker Security Group (Allow Aqua MicroScanner Access to Scan)
+            usermod -a -G docker jenkins
+            systemctl start jenkins
+            systemctl enable jenkins
+            systemctl status jenkins
+      Type: AWS::EC2::Instance
+    UbuntuDevInstance:
+      Properties:
+        BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: '8'
+        InstanceType: t2.micro
+        ImageId: ami-09dd2e08d601bff67
+        KeyName: "SBUdacityKP"
+        NetworkInterfaces: 
+          - AssociatePublicIpAddress: "true"
+            DeviceIndex: "0"
+            GroupSet: 
+              - Ref: EC2SecGroup
+            SubnetId: 
+              Ref: "PublicSubnet1"
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            #--Setup Server--
+            apt-get update -y
+            # Install Unzip
+            apt install unzip
+            # Python, Python 3 and Python 3 Virtual Environment
+            apt install python-pip -y
+            apt install python3-pip -y
+            apt-get install python3-venv -y
+            # Make
+            pip3 install make
+            # Docker Setup
+            apt install docker.io -y
+            apt-get update -y
+            # Get Hadolint
+            wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.17.6/hadolint-Linux-x86_64
+            chmod +x /usr/bin/hadolint
+            # Setup Git
+            git config --global user.name "Sean B"
+            git config --global user.email "deitryn@gmail.com"
+            # AWS CLI V2
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
+            # Install Kubectl
+            curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+            echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+            # Install eksctl
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/0.20.0-rc.0/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
+            mv /tmp/eksctl /usr/local/bin
+            # Generate SSH Key
+            ssh-keygen -t rsa
+            # To push docker image to ECR
+            ## First: Get SSH pub key and link to GitHub account
+            ## Next: 'git clone git@github.com:Sean-Breach/Capstone.git'
+            ## Next: 'cd Capstone'
+            ## Next: 'python3 -m venv ~/.capstone'
+            ## Next: 'source ~/.capstone/bin/active
+            ## Next: 'make install'
+            ## Next: 'docker build -tag python_web .'
+            ## Next: 'make lint'
+            ## Next: 'docker run -p 8080:80 python_web' to test
+            ## Next: 'Ctrl+C to kill instance'
+            ## Next: 'aws configure' to set token for pushing docker image to ECR
+            ## Next: 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin aws_account_id.dkr.ecr.us-east-1.amazonaws.com' to get login
+            ## Next: 'docker tag imageId aws_account_id.dkr.ecr.region.amazonaws.com/my-web-app'
+            ## Next: 'docker push aws_account_id.dkr.ecr.region.amazonaws.com/my-web-app'
+            # To Get the EKS Service to Work
+            ## Build EKS Service and Node Group
+            ## Create Pod: 'kubectl run capstone-ecr --image=500258544193.dkr.ecr.us-west-2.amazonaws.com/capstone-ecr --replicas=1 --port=8080'
+            ## Create Service: 'kubectl create -f EKS-Service.yml'        
+      Type: AWS::EC2::Instance
+
+Outputs: 
+    VPC: 
+        Description: A reference to the created VPC
+        Export:
+          Name: !Sub ${EnvironmentName}-VPCID
+        Value: !Ref VPC
+    JenkinsInstanceIP: 
+        Description: A reference to the created Jenkins EC2 IP
+        Export:
+          Name: !Sub ${EnvironmentName}-JenkinsInstanceID
+        Value: !GetAtt JenkinsInstance.PublicIp
+    UbuntuDevInstanceIP:
+        Description: A reference to the created Ubuntu Dev EC2 IP
+        Export:
+          Name: !Sub ${EnvironmentName}-UbuntuDevInstanceID
+        Value: !GetAtt UbuntuDevInstance.PublicIp
