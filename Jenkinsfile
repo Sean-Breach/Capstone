@@ -75,8 +75,8 @@ pipeline {
 					sh "echo 'No Pod Deployed. Deploying Now'"
 					sh "~/bin/kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
 					script {
-						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true).Trim()
-						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).Trim()
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true).ToString().Trim()
+						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).ToString().Trim()
 					}
 				} else {
 					sh "echo 'Previous Pod Deployment Found'"
@@ -86,8 +86,8 @@ pipeline {
 					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
 					sh "echo 'Get Pods New Name and Hash'"
 					script {
-						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | sort_by(.metadata.creationTimestamp)[0].name'", returnStdout: true).Trim()
-						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).Trim()
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | sort_by(.metadata.creationTimestamp)[0].name'", returnStdout: true).ToString().Trim()
+						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).ToString().Trim()
 					}
 					sh "echo '$podName'"
 				}
