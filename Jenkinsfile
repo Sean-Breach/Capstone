@@ -72,36 +72,34 @@ pipeline {
 					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true).trim()
 				}
 				if (podName.isEmpty()) {
-					sh "echo 'No Pod Deployed. Deploying Now'"
+					sh "echo 'No Pod Found, Deploying Now'"
 					sh "~/bin/kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
 					script {
+						sh "echo 'Getting Pod Name and Hash'"
 						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true).trim()
 						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).trim()
 					}
 				} else {
-					sh "echo 'Previous Pod Deployment Found'"
-					sh "echo 'Set New Image to Deployed Pod'"
+					sh "echo 'Pod Already Deployed, Updating Image'"
 					sh "~/bin/kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURI`:`echo $buildID`"
-					sh "echo 'Restart Pod to Update Image'"
+					sh "echo 'Restart Pod to Clear Cache'"
 					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
-					sh "echo 'Get Pods New Name and Hash'"
+					sh "echo 'Retrieving New Pod Name and Hash'"
 					script {
 						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | sort_by(.metadata.creationTimestamp)[0].name'", returnStdout: true).trim()
 						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).trim()
 					}
-					sh "echo '$podName'"
 				} 
-				
 				sh "echo 'Check if Pod Service has Previously been Deployed'"
 				script {
 					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true).trim()
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
+					sh "echo 'No Pod Service Found, Deploying Now"
 					sh "~/bin/kubectl expose pod $podName --port=80 --target-port=80 --type=LoadBalancer --name=capstone-server"
-				}
-				script {
-					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true).trim()
-				}
+					//script {
+					//	eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true).trim()
+					//}
 				} else {
 					sh "echo 'Pod Service Found. Patching with New Pod Hash'"
 					sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
@@ -110,7 +108,7 @@ pipeline {
 					serviceAddress = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"$podName\").status.loadBalancer'", returnStdout: true).trim()
 				}
 				sh "echo 'Deployment Complete!'"
-				sh "echo 'View Page Here: http://$serviceAddress'"
+				sh "echo 'View Page Here (Please Allow a Minute for Services to Refresh): http://$serviceAddress'"
 			}
 		}
 	}
