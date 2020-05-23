@@ -64,7 +64,7 @@ pipeline {
 			sh "echo 'EKS is Setup'"
 		}
 	}
-	stage('Deploy Amazon ECR Image to Kubernetes Cluster') {
+	stage('Deploy Amazon ECR to Kubernetes Cluster') {
 		steps {
 			script {
 				sh "echo 'Check if Pod has Previously been Deployed'"
@@ -86,8 +86,8 @@ pipeline {
 					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
 					sh "echo 'Retrieving New Pod Name and Hash'"
 					script {
-						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | sort_by(.metadata.creationTimestamp)[0].name'", returnStdout: true).trim()
-						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).trim()
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq '[.items[] | select(.status.phase == \"Running\") ] | max_by(.metadata.creationTimestamp).metadata.name", returnStdout: true).trim()
+						podHash = sh(script: ~/bin/kubectl get pods --output=json | jq '[.items[] | select(.status.phase == \"Running\") ] | max_by(.metadata.creationTimestamp).metadata.\"pod-template-hash\"'", returnStdout: true).trim()
 					}
 				} 
 				sh "echo 'Check if Pod Service has Previously been Deployed'"
