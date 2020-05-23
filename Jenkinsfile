@@ -16,7 +16,7 @@ pipeline {
 				buildID = 'Hello' 
 			}
 			//sh(returnStdout: true, "echo date +%Y-%m-%dT%H.%M.%S")
-			sh "echo 'Build ID: ${env.buildID}'"
+			sh "echo 'Build ID: $buildID'"
 			//ecrURI = "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'"
 		}
 	}
