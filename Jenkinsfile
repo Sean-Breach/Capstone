@@ -74,8 +74,8 @@ pipeline {
 					sh "echo 'No Pod Deployed. Deploying Now'"
 					sh "~/bin/kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
 					script {
-						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
-						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
+						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 					}
 				} else {
 					sh "echo 'Previous Pod Deployment Found'"
@@ -83,11 +83,10 @@ pipeline {
 					sh "~/bin/kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURI`:`echo $buildID`"
 					sh "echo 'Restart Pod to Update Image'"
 					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
-					sleep(30)
 					sh "echo 'Get Pods New Name and Hash'"
 					script {
-						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
-						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
+						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 					}
 					sh "echo '$podName'"
 				}
