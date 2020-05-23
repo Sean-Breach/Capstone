@@ -20,7 +20,7 @@ pipeline {
 			sh "echo 'Build ID: $buildID, ECR URI: $ecrURI'"
 		}
 	}
-	stage('Lint Application') {
+	stage('Lint Repo') {
 		steps {
 			sh "echo 'Performing Hadolint on Dockerfile'"
 			sh "hadolint Dockerfile"
@@ -28,7 +28,7 @@ pipeline {
 			sh "pylint --disable=R,C,W1203 ./web.py"
 		}
 	}
-	stage('Build Container') {
+	stage('Build Docker Container') {
 		steps {
 			sh "echo 'Build Docker Image'"
 			sh "docker build --tag=python_website ."
@@ -41,7 +41,6 @@ pipeline {
 			aquaMicroscanner(imageName: "alpine:latest", notCompliesCmd: "exit 1", onDisallowed: "fail", outputFormat: "html")
 		}
 	}
-/*
 	stage('Push Image') {
 		steps {
 			sh "echo 'Get Login Token for Pushing Docker Image to Amazon ECR'"
@@ -54,6 +53,7 @@ pipeline {
 			sh "docker push $ecrURI"
 		}
 	}
+/*
 	stage('Setup EKS') {
 		steps {
 			sh "echo 'Get EKS kubeconfig'"
