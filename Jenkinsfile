@@ -13,7 +13,7 @@ pipeline {
 		steps {
 			sh "echo 'Getting Timestamp'"
 			script {
-				buildID =  = sh(script: 'uname', returnStdout: true)
+				def buildID =  = sh(script: 'uname', returnStdout: true)
 			}
 			//sh('echo `date +%Y-%m-%dT%H.%M.%S`', returnStdout: true).trim()
 			sh "echo 'Build ID: $buildID'"
