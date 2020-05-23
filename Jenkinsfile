@@ -69,7 +69,7 @@ pipeline {
 			script {
 				podName = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 				if (podName.isEmpty()) {
-					sh "echo 'No Pod Deployed. Deploying Now'")
+					sh "echo 'No Pod Deployed. Deploying Now'"
 					sh "kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
 					podName = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 					podHash = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
