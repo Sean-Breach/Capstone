@@ -105,7 +105,7 @@ pipeline {
 					sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
 				}
 				script {
-					serviceAddress = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"$podName\").status.loadBalancer'", returnStdout: true).trim()
+					serviceAddress = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | .status.loadBalancer.ingress[0].hostname'", returnStdout: true).trim()
 				}
 				sh "echo 'Deployment Complete!'"
 				sh "echo 'View Page Here (Please Allow a Minute for Services to Refresh): http://$serviceAddress'"
