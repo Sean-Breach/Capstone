@@ -90,7 +90,7 @@ pipeline {
 						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).trim()
 					}
 					sh "echo '$podName'"
-				}
+				} 
 				
 				sh "echo 'Check if Pod Service has Previously been Deployed'"
 				script {
