@@ -100,7 +100,7 @@ pipeline {
 					sh "echo '~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type=LoadBalancer --name=capstone-server'"
 					sh "echo ` ~/bin/kubectl get pods $podName --output=json | jq '.status.phase'`"
 					retry(5) {
-						sh(script: '~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type="LoadBalancer" --name="capstone-server"',returnStdout: true)
+						sh(script: '~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type="LoadBalancer"',returnStdout: true)
 					}
 					/*
 					script {
