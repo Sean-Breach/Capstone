@@ -70,7 +70,7 @@ pipeline {
 				eksService = sh "kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'"
             } else {
 				sh "echo 'Pod Service Found. Patching with New Pod Hash'"
-				sh "kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"${podHash}\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"${podHash}\"}}}'
+				sh "kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"${podHash}\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"${podHash}\"}}}'"
 			}
 		}
 		sh "echo 'Deployment Complete'"
