@@ -87,7 +87,7 @@ pipeline {
 					sh "echo 'Retrieving New Pod Name and Hash'"
 					script {
 						podName = sh(script: "~/bin/kubectl get pods --output=json | jq '[.items[] | select(.status.phase == \"Running\") ] | max_by(.metadata.creationTimestamp).metadata.name'", returnStdout: true).trim()
-						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq '[.items[] | select(.status.phase == \"Running\") ] | max_by(.metadata.creationTimestamp).metadata.\"pod-template-hash\"'", returnStdout: true).trim()
+						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq '[.items[] | select(.status.phase == \"Running\") ] | max_by(.metadata.creationTimestamp).metadata.labels.\"pod-template-hash\"'", returnStdout: true).trim()
 					}
 				} 
 				sh "echo 'Check if Pod Service has Previously been Deployed'"
