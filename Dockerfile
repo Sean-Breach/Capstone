@@ -8,12 +8,16 @@ WORKDIR /app
 # Copy source code to working directory
 COPY . web.py /app/
 COPY templates /app/templates
+ADD https://get.aquasec.com/microscanner .
 
 ## Step 3:
 # Install packages from requirements.txt
 # hadolint ignore=DL3013
 RUN pip install --upgrade pip &&\
     pip install --trusted-host pypi.python.org -r requirements.txt
+# Aqua MicroScan
+RUN chmod +x microscanner
+RUN ./microscanner MmFkZTJlMzAyNjNi
 
 ## Step 4:
 # Expose port 80
