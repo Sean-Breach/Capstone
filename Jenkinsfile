@@ -50,7 +50,7 @@ pipeline {
 				dockerImageID = sh(script: 'echo `docker images -q python_website`', returnStdout: true)
 			}
 			sh "echo 'Tag Docker Image Before Pushing to Amazon ECR (Build ID: $buildID, Image ID: $dockerImageID)'"
-			sh "docker tag $dockerImageID $ecrURI:$buildID"
+			sh "docker tag $dockerImageID ${ecrURI}:${buildID}"
 			sh "echo 'Push Docker Image to Amazon ECR'"
 			sh "docker push $ecrURI"
 		}
