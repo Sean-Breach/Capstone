@@ -102,7 +102,7 @@ pipeline {
 					//}
 				} else {
 					sh "echo 'Pod Service Found. Patching with New Pod Hash'"
-					sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
+					sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": $podHash}},\"spec\": {\"selector\": {\"pod-template-hash\": $podHash}}}'"
 				}
 				script {
 					serviceAddress = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | .status.loadBalancer.ingress[0].hostname'", returnStdout: true).trim()
