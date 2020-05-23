@@ -28,13 +28,13 @@ pipeline {
 			sh "pylint --disable=R,C,W1203 ./web.py"
 		}
 	}
-/*
 	stage('Build Container') {
 		steps {
 			sh "echo 'Build Docker Image'"
 			sh "docker build --tag=python_website ."
 		}
 	}
+/*
 	stage('Security Scan') {
 		steps {
 			sh "echo 'Checking Security with Aqua MicroScanner'"
