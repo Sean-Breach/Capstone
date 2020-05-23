@@ -98,7 +98,7 @@ pipeline {
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "echo '{\"kind\":\"Service\", \"apiVersion\":\"v1\", \"metadata\":{ \"name\":\"capstone-server\", \"labels\":{ \"pod-template-hash\":\"$podHash\", \"run\":\"$ecrRepoName\"} }, \"spec\":{\"selector\":{\"pod-template-hash\":\"$podHash\",\"run\":\"$ecrRepoName\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > ~jenkins/tmp/expose_service.json"
+					sh "echo '{\"kind\":\"Service\", \"apiVersion\":\"v1\", \"metadata\":{ \"name\":\"capstone-server\", \"labels\":{ \"pod-template-hash\":\"$podHash\", \"run\":\"`echo $ecrRepoName`\"} }, \"spec\":{\"selector\":{\"pod-template-hash\":\"`echo $podHash`\",\"run\":\"`echo $ecrRepoName`\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > ~jenkins/tmp/expose_service.json"
 					
 					
 					
