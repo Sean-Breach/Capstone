@@ -48,7 +48,7 @@ pipeline {
 			sh "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ecrURI"
 			sh "echo 'Get Docker Image ID'"
 			script {
-				dockerImageID = sh(script: 'docker images -q python_website', returnStdout: true)
+				dockerImageID = sh(script: 'echo `docker images -q python_website`', returnStdout: true)
 			}
 			sh "echo 'Tag Docker Image Before Pushing to Amazon ECR (Build ID: $buildID, Image ID: $imageID)'"
 			sh "docker tag $imageID $ecrURI:$buildID"
