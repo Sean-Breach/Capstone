@@ -1,10 +1,10 @@
 // Global Variable for Retaining a Constant Build ID
-buildID = ""
-ecrURI = ""
-ecrRepoName = "capstone-ecr"
-eksService = ""
-podHash = ""
-podName = ""
+def buildID = ""
+def ecrURI = ""
+def ecrRepoName = "capstone-ecr"
+def eksService = ""
+def podHash = ""
+def podName = ""
 
 pipeline {
   agent any
@@ -12,8 +12,8 @@ pipeline {
 	stage('Setup Global Parameters'){
 		steps {
 			sh "echo 'Getting Timestamp'"
-			buildID = sh (script: "echo date +%Y-%m-%dT%H.%M.%S", returnStdout: true).toString().trim()
-			sh "echo 'Build ID: $buildID'"
+			buildID = 'Hello'//sh (script: "echo date +%Y-%m-%dT%H.%M.%S", returnStdout: true).toString().trim()
+			sh "echo 'Build ID: ${buildID}'"
 			//ecrURI = "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'"
 		}
 	}
