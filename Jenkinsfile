@@ -98,23 +98,27 @@ pipeline {
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "echo '{"kind":"Service","apiVersion":"v1","metadata":{"name":"capstone-server","labels":{"pod-template-hash":"$podHash","run":"$ecrRepoName"}},"spec":{"selector":{"pod-template-hash":"$podHash","run":"$ecrRepoName"},"ports":[{"port":8080,"targetPort":80}],"type":"LoadBalancer"}}' > $buildID-service.json"
+					sh "echo '{"kind":\"Service\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"capstone-server\",\"labels\":{\"pod-template-hash\":\"$podHash\",\"run\":\"$ecrRepoName\"}},\"spec\":{\"selector\":{\"pod-template-hash\":\"$podHash\",\"run\":\"$ecrRepoName\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > $buildID-service.json"
 					
 					retry(5) {
-						sh "echo ` ~/bin/kubectl apply -f $build-service.json"
+						sh "~/bin/kubectl apply -f $build-service.json"
 					}
+				/*	
 					script {
 						eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true)
 					}
+				*/
 				} else {
 					//sh "echo 'Pod Service Found. Patching with New Pod Hash'"
 					//sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
 				}
+				/*
 				script {
 					serviceAddress = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"$podName\").status.loadBalancer'", returnStdout: true)
 				}
 				sh "echo 'Deployment Complete!'"
 				sh "echo 'View Page Here: http://$serviceAddress:8080'"
+				*/
 			}
 		}
 	}
