@@ -13,8 +13,9 @@ pipeline {
 		steps {
 			sh "echo 'Getting Timestamp'"
 			script {
-				env.buildID = sh(returnStdout: true, "echo date +%Y-%m-%dT%H.%M.%S")
+				buildID = 'Hello' 
 			}
+			//sh(returnStdout: true, "echo date +%Y-%m-%dT%H.%M.%S")
 			sh "echo 'Build ID: ${env.buildID}'"
 			//ecrURI = "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'"
 		}
