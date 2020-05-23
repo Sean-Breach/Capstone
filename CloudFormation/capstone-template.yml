@@ -262,7 +262,7 @@ Resources:
             # Install Unzip
             apt install unzip
             # Install JQ for JSON Parsing
-            apt install jq
+            apt install jq -y
             # Python, Python 3 and Python 3 Virtual Environment
             apt install python-pip -y
             apt install python3-pip -y
@@ -294,25 +294,6 @@ Resources:
             mv /tmp/eksctl /usr/local/bin
             # Generate SSH Key
             ssh-keygen -t rsa
-            # To push docker image to ECR
-            ## First: Get SSH pub key and link to GitHub account
-            ## Next: 'git clone git@github.com:Sean-Breach/Capstone.git'
-            ## Next: 'cd Capstone'
-            ## Next: 'python3 -m venv ~/.capstone'
-            ## Next: 'source ~/.capstone/bin/active
-            ## Next: 'make install'
-            ## Next: 'docker build -tag python_web .'
-            ## Next: 'make lint'
-            ## Next: 'docker run -p 8080:80 python_web' to test
-            ## Next: 'Ctrl+C to kill instance'
-            ## Next: 'aws configure' to set token for pushing docker image to ECR
-            ## Next: 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin aws_account_id.dkr.ecr.us-east-1.amazonaws.com' to get login
-            ## Next: 'docker tag imageId aws_account_id.dkr.ecr.region.amazonaws.com/my-web-app'
-            ## Next: 'docker push aws_account_id.dkr.ecr.region.amazonaws.com/my-web-app'
-            # To Get the EKS Service to Work
-            ## Build EKS Service and Node Group
-            ## Create Pod: 'kubectl run capstone-ecr --image=500258544193.dkr.ecr.us-west-2.amazonaws.com/capstone-ecr --replicas=1 --port=8080'
-            ## Create Service: "kubectl expose pod capstone-ecr-657bddf55f-67pqj --port=8080 --target-port=80 --type="LoadBalancer" --name=capstone-server"        
       Type: AWS::EC2::Instance
 
     # EKS Setup
