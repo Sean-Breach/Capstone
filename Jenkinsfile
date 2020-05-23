@@ -13,9 +13,9 @@ pipeline {
 		steps {
 			sh "echo 'Getting Timestamp'"
 			script {
-				buildID =  = sh (script: 'git --no-pager show -s --format=\'%ae\'', returnStdout: true).trim()
-				//sh('echo `date +%Y-%m-%dT%H.%M.%S`', returnStdout: true).trim()
+				buildID =  = sh (script: 'echo hello', returnStdout: true).trim()
 			}
+			//sh('echo `date +%Y-%m-%dT%H.%M.%S`', returnStdout: true).trim()
 			sh "echo 'Build ID: $buildID'"
 			//ecrURI = "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'"
 		}
