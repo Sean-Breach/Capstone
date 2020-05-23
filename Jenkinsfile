@@ -96,7 +96,7 @@ pipeline {
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'No Pod Service Found, Deploying Now'"
-					sh "~/bin/kubectl expose pod $podName --port=80 --target-port=80 --type=LoadBalancer --name=capstone-server"
+					sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type=LoadBalancer --name=capstone-server"
 					//script {
 					//	eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true).trim()
 					//}
@@ -108,7 +108,7 @@ pipeline {
 					serviceAddress = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | .status.loadBalancer.ingress[0].hostname'", returnStdout: true).trim()
 				}
 				sh "echo 'Deployment Complete!'"
-				sh "echo 'View Page Here (Please Allow a Minute for Services to Refresh): http://$serviceAddress'"
+				sh "echo 'View Page Here (Please Allow a Minute for Services to Refresh): http://$serviceAddress:8080'"
 			}
 		}
 	}
