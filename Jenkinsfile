@@ -104,7 +104,6 @@ pipeline {
 				sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
 			}
 			sh "echo 'Deployment Complete!'"
-			}
 		}
 	}
   }
