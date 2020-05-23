@@ -18,16 +18,15 @@ pipeline {
 			}
 			//ecrURI = sh(script: "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == '$ecrRepoName').repositoryUri", returnStdout: true)
 			sh "echo 'Build ID: $buildID, ECR URI: $ecrURI'"
-			
 		}
 	}
-/*
 	stage('Lint Application') {
 		steps {
 			sh "echo 'Performing Make Lint to Check Python and HTML'"
 			sh "make lint"
 		}
 	}
+/*
 	stage('Build Container') {
 		steps {
 			sh "echo 'Build Docker Image'"
