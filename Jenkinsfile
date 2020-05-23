@@ -55,7 +55,7 @@ pipeline {
 			sh "docker push $ecrURI"
 		}
 	}
-/*
+
 	stage('Setup EKS') {
 		steps {
 			sh "echo 'Get EKS kubeconfig'"
@@ -63,6 +63,7 @@ pipeline {
 			sh "echo 'EKS is Setup'"
 		}
 	}
+/*
 	stage('Deploy container') {
 		steps {
 			sh "echo 'Check if Pod has Previously been Deployed'"
