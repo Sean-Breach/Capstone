@@ -14,9 +14,10 @@ pipeline {
 			sh "echo 'Getting Timestamp'"
 			script {
 				buildID=sh(script: 'echo `date +%Y-%m-%dT%H.%M.%S`', returnStdout: true)
+				ecrURI = sh(script: "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'", returnStdout: true)
 			}
-			sh "echo 'Build ID: $buildID'"
-			//ecrURI = "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'"
+			sh "echo 'Build ID: $buildID', ECR URI: $ecrURI"
+			
 		}
 	}
 /*
