@@ -193,6 +193,11 @@ Resources:
             #!/bin/bash
             #--Setup Server--
             apt-get update -y
+            # Install Unzip
+            apt install unzip
+            # Get Hadolint
+            wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.17.6/hadolint-Linux-x86_64
+            chmod +x /usr/bin/hadolint
             # Python 3 - Required for Boto
             apt install python3-pip -y
             # Install JQ for JSON Parsing
@@ -207,6 +212,18 @@ Resources:
             apt install ansible -y
             # Boto Setup
             pip3 install boto
+            # AWS CLI V2
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
+            # Install Kubectl
+            curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+            echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+            # Install eksctl
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/0.20.0-rc.0/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
+            mv /tmp/eksctl /usr/local/bin
             # Add Jenkins Key and Source List to Server
             wget -q -O - https://pkg.Jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
             sh -c "echo 'deb https://pkg.jenkins.io/debian-stable binary/' > /etc/apt/sources.list.d/jenkins.list"
