@@ -195,6 +195,8 @@ Resources:
             apt-get update -y
             # Python 3 - Required for Boto
             apt install python3-pip -y
+            # Install JQ for JSON Parsing
+            apt install jq
             # Java Runtime for Jenkins
             apt install default-jdk -y
             # Tidy Used for Jenkins Linting
@@ -242,6 +244,8 @@ Resources:
             apt-get update -y
             # Install Unzip
             apt install unzip
+            # Install JQ for JSON Parsing
+            apt install jq
             # Python, Python 3 and Python 3 Virtual Environment
             apt install python-pip -y
             apt install python3-pip -y
@@ -291,7 +295,7 @@ Resources:
             # To Get the EKS Service to Work
             ## Build EKS Service and Node Group
             ## Create Pod: 'kubectl run capstone-ecr --image=500258544193.dkr.ecr.us-west-2.amazonaws.com/capstone-ecr --replicas=1 --port=8080'
-            ## Create Service: 'kubectl create -f EKS-Service.yml'        
+            ## Create Service: "kubectl expose pod capstone-ecr-657bddf55f-67pqj --port=8080 --target-port=80 --type="LoadBalancer" --name=capstone-server"        
       Type: AWS::EC2::Instance
 
     # EKS Setup
@@ -328,19 +332,6 @@ Resources:
             Subnets:
                 - !Ref PublicSubnet1
                 - !Ref PublicSubnet2
-
-    # Kubernetes Pod Load Balancer
-    PodLB:
-        Properties:
-            SecurityGroups:
-            - Ref: SecGroup
-            Subnets:
-            - !Ref PublicSubnet1
-            - !Ref PublicSubnet2
-            Tags: 
-                - Key: Name 
-                  Value: !Sub ${EnvironmentName}-PodLB
-        Type: AWS::ElasticLoadBalancingV2::LoadBalancer
 
 Outputs: 
     VPC: 
