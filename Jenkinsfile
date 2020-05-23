@@ -22,8 +22,10 @@ pipeline {
 	}
 	stage('Lint Application') {
 		steps {
-			sh "echo 'Performing Make Lint to Check Python and HTML'"
-			sh "make lint"
+			sh "echo 'Performing Hadolint on Dockerfile'"
+			sh "hadolint Dockerfile"
+			sh "echo 'Performing Python Lint on web.py'"
+			sh "pylint --disable=R,C,W1203 ./web.py"
 		}
 	}
 /*
