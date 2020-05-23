@@ -15,8 +15,8 @@ pipeline {
 		steps {
 			sh "echo 'Getting Timestamp'"
 			script {
-				buildID = sh(script: 'echo `date +%Y-%m-%dT%H.%M.%S`', returnStdout: true)
-				ecrURI = sh(script: "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'", returnStdout: true)
+				buildID = sh(script: 'echo `date +%Y-%m-%dT%H.%M.%S`', returnStdout: true).ToString().Trim()
+				ecrURI = sh(script: "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'", returnStdout: true).ToString().Trim()
 			}
 			sh "echo 'Build ID: $buildID, ECR URI: $ecrURI'"					
 		}
@@ -48,7 +48,7 @@ pipeline {
 			sh "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ecrURI"
 			sh "echo 'Get Docker Image ID'"
 			script {
-				dockerImageID = sh(script: 'echo `docker images -q python_website`', returnStdout: true)
+				dockerImageID = sh(script: 'echo `docker images -q python_website`', returnStdout: true).ToString().Trim()
 			}
 			sh "echo 'Tag Docker Image Before Pushing to Amazon ECR (Build ID: $buildID, Image ID: $dockerImageID)'"
 			sh "docker tag `echo $dockerImageID` `echo $ecrURI`:`echo $buildID`"
@@ -69,7 +69,7 @@ pipeline {
 			script {
 				sh "echo 'Check if Pod has Previously been Deployed'"
 				script {
-					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true).Trim()
+					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true).ToString().Trim()
 				}
 				if (podName.isEmpty()) {
 					sh "echo 'No Pod Deployed. Deploying Now'"
