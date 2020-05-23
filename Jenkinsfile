@@ -97,7 +97,7 @@ pipeline {
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "echo '~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type=LoadBalancer --name=capstone-server'"
+					sh "echo '~/bin/kubectl expose pod $podName --port=80 --target-port=80 --type=LoadBalancer --name=capstone-server'"
 					sh "echo ` ~/bin/kubectl get pods $podName --output=json | jq '.status.phase'`"
 					retry(5) {
 						sh "~/bin/kubectl expose pod $podName --port=8083 --target-port=80 --type=LoadBalancer --name=capstone-server"
