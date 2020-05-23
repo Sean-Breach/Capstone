@@ -12,10 +12,11 @@ pipeline {
 	stage('Setup Global Parameters'){
 		steps {
 			sh "echo 'Getting Timestamp'"
-			buildID = sh "echo date +%Y-%m-%dT%H.%M.%S"
-			ecrURI = "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"${ecrRepoName}\").repositoryUri'"
+			//buildID = sh "echo date +%Y-%m-%dT%H.%M.%S"
+			//ecrURI = "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"${ecrRepoName}\").repositoryUri'"
 		}
 	}
+/*
 	stage('Lint Application') {
 		steps {
 			sh "echo 'Performing Make Lint to Check Python and HTML'"
@@ -89,5 +90,6 @@ pipeline {
 			sh "echo 'Deployment Complete'"
 		}
 	}
+*/
   }
 }
