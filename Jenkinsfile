@@ -83,7 +83,7 @@ pipeline {
 					sh "~/bin/kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURI`:`echo $buildID`"
 					sh "echo 'Restart Pod to Update Image'"
 					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
-					sleep(10000)
+					sleep(10)
 					sh "echo 'Get Pods New Name and Hash'"
 					script {
 						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
