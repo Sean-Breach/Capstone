@@ -101,7 +101,7 @@ pipeline {
 					sh "echo '~/bin/kubectl expose pod $podName --port=80 --target-port=80 --type=LoadBalancer --name=capstone-server'"
 					sh "echo ` ~/bin/kubectl get pods $podName --output=json | jq '.status.phase'`"
 					retry(5) {
-						sh "~/bin/kubectl expose pod $podName --port=80 --target-port=80 --type=LoadBalancer --name=capstone-server --protocol=TCP --selector='{\"pod-template-has\":\"$podHash\",\"run\":\"capstone-ecr\"}' --labels='{\"pod-template-has\":\"$podHash\",\"run\":\"capstone-ecr\"}'"
+						sh "~/bin/kubectl expose pod $podName --port=8080 -protocol=TCP --target-port=80 --type=LoadBalancer --name=capstone-server --protocol=TCP --selector='{\"pod-template-has\":\"$podHash\",\"run\":\"capstone-ecr\"}' --labels='{\"pod-template-has\":\"$podHash\",\"run\":\"capstone-ecr\"}'"
 					}
 					script {
 						eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true)
