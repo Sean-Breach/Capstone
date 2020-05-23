@@ -66,18 +66,15 @@ pipeline {
 	stage('Deploy Amazon ECR Image to Kubernetes Cluster') {
 		steps {
 			script {
-				def tempPodName1 = ''
-				def tempPodName2 = ''
-				
 				sh "echo 'Check if Pod has Previously been Deployed'"
 				script {
-					tempPodName1 = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
+					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
 				}
-				if (tempPodName1.isEmpty()) {
+				if (podName.isEmpty()) {
 					sh "echo 'No Pod Deployed. Deploying Now'"
 					sh "~/bin/kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
 					script {
-						tempPodName2 = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
 						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 					}
 				} else {
@@ -86,20 +83,21 @@ pipeline {
 					sh "~/bin/kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURI`:`echo $buildID`"
 					sh "echo 'Restart Pod to Update Image'"
 					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
+					sleep(10000)
 					sh "echo 'Get Pods New Name and Hash'"
 					script {
-						tempPodName2 = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
 						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 					}
-					sh "echo '$tempPodName2'"
+					sh "echo '$podName'"
 				}
 				sh "echo 'Check if Pod Service has Previously been Deployed'"
 				script {
 					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'", returnStdout: true)
 				}
-				if (eksService.isEmpty() && !tempPodName2.isEmpty()) {
+				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "~/bin/kubectl expose pod $tempPodName2 --port=8080 --target-port=80 --type='LoadBalancer' --name=capstone-server"
+					sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type='LoadBalancer' --name=capstone-server"
 					script {
 						eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'", returnStdout: true)
 					}
