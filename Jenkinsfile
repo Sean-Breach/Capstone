@@ -92,7 +92,7 @@ pipeline {
 				} 
 				sh "echo 'Check if Pod Service has Previously been Deployed'"
 				script {
-					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true).trim()
+					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == "capstone-server").metadata.name'", returnStdout: true).trim()
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'No Pod Service Found, Deploying Now'"
