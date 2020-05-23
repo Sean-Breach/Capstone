@@ -84,7 +84,7 @@ pipeline {
 					podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 				}
 				sh "echo 'Check if Pod Service has Previously been Deployed'"
-				eksService = sh "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'"
+				eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'", returnStdout: true)
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
 					sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type=\"LoadBalancer\" --name=capstone-server"
