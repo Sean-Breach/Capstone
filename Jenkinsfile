@@ -68,34 +68,42 @@ pipeline {
 			sh "echo 'Check if Pod has Previously been Deployed'"
 			script {
 				podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
-				if (podName.isEmpty()) {
-					sh "echo 'No Pod Deployed. Deploying Now'"
-					sh "~/bin/kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
+			}
+			if (podName.isEmpty()) {
+				sh "echo 'No Pod Deployed. Deploying Now'"
+				sh "~/bin/kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
+				script {
 					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
 					podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
-				} else {
-					sh "echo 'Previous Pod Deployment Found'"
-					sh "echo 'Set New Image to Deployed Pod'"
-					sh "~/bin/kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURI`:`echo $buildID`"
-					sh "echo 'Restart Pod to Update Image'"
-					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
-					sh "echo 'Get Pods New Name and Hash'"
-					script { podName = '' }
-					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
-					podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
-					sh "echo '$podName'"
 				}
-				sh "echo 'Check if Pod Service has Previously been Deployed'"
+			} else {
+				sh "echo 'Previous Pod Deployment Found'"
+				sh "echo 'Set New Image to Deployed Pod'"
+				sh "~/bin/kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURI`:`echo $buildID`"
+				sh "echo 'Restart Pod to Update Image'"
+				sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
+				sh "echo 'Get Pods New Name and Hash'"
+				script {
+					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
+					podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
+				}
+				sh "echo '$podName'"
+			}
+			sh "echo 'Check if Pod Service has Previously been Deployed'"
+			script {
 				eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'", returnStdout: true)
-				if (eksService.isEmpty() && !podName.isEmpty()) {
-					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type='LoadBalancer' --name=capstone-server"
+			}
+			if (eksService.isEmpty() && !podName.isEmpty()) {
+				sh "echo 'Pod Service not Found. Setting up Service for Pod'"
+				sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type='LoadBalancer' --name=capstone-server"
+				script {
 					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'", returnStdout: true)
-				} else {
-					sh "echo 'Pod Service Found. Patching with New Pod Hash'"
-					sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
 				}
-				sh "echo 'Deployment Complete!'"
+			} else {
+				sh "echo 'Pod Service Found. Patching with New Pod Hash'"
+				sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
+			}
+			sh "echo 'Deployment Complete!'"
 			}
 		}
 	}
