@@ -26,7 +26,7 @@ pipeline {
 		sh "echo 'Checking Security with Aqua MicroScanner'"
         aquaMicroscanner(imageName: "alpine:latest", notCompliesCmd: "exit 1", onDisallowed: "fail", outputFormat: "html")
 	}
-	stage(Push Image') {
+	stage('Push Image') {
 		sh "echo 'Get Login Token for Pushing Docker Image to Amazon ECR'"
 		sh "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${ecrID}"
         sh "echo 'Get Docker Image ID'"
