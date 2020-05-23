@@ -94,24 +94,27 @@ pipeline {
 				sh "echo 'Check if Pod Service has Previously been Deployed'"
 				script {
 					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true)
-					sleep(60)
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
 					sh "echo '~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type=LoadBalancer --name=capstone-server'"
-					sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type='LoadBalancer' --name=capstone-server"
+					//sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type='LoadBalancer' --name=capstone-server"
+					/*
 					script {
 						eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true)
 					}
+					*/
 				} else {
-					sh "echo 'Pod Service Found. Patching with New Pod Hash'"
-					sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
+					//sh "echo 'Pod Service Found. Patching with New Pod Hash'"
+					//sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
 				}
+				/*
 				script {
 					serviceAddress = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"$podName\").status.loadBalancer'", returnStdout: true)
 				}
 				sh "echo 'Deployment Complete!'"
 				sh "echo 'View Page Here: http://$serviceAddress:8080'"
+				*/
 			}
 		}
 	}
