@@ -111,9 +111,7 @@ pipeline {
 				sh "echo 'Deployment Complete!'"
 				sh "echo 'View Page Here: http://$serviceAddress:8080'"
 			}
-		}kubectl expose pod capstone-ecr-6d5fb6f987-jpcxbservice/capstone-ecr-6d5fb6f987-jpcxb exposed --port=8080 --target-port=80 --type=LoadBalancer --name=capstone-server
-
+		}
 	}
-
   }
 }
