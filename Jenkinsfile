@@ -69,14 +69,14 @@ pipeline {
 			script {
 				sh "echo 'Check if Pod has Previously been Deployed'"
 				script {
-					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
+					podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true).Trim()
 				}
 				if (podName.isEmpty()) {
 					sh "echo 'No Pod Deployed. Deploying Now'"
 					sh "~/bin/kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
 					script {
-						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true)
-						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.name'", returnStdout: true).Trim()
+						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).Trim()
 					}
 				} else {
 					sh "echo 'Previous Pod Deployment Found'"
@@ -86,8 +86,8 @@ pipeline {
 					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
 					sh "echo 'Get Pods New Name and Hash'"
 					script {
-						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | sort_by(.metadata.creationTimestamp)[0].name'", returnStdout: true)
-						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | sort_by(.metadata.creationTimestamp)[0].name'", returnStdout: true).Trim()
+						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true).Trim()
 					}
 					sh "echo '$podName'"
 				}
@@ -98,7 +98,7 @@ pipeline {
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "echo '{\"kind\":\"Service\", \"apiVersion\":\"v1\", \"metadata\":{ \"name\":\"capstone-server\", \"labels\":{ \"pod-template-hash\":\"$podHash\", \"run\":\"`echo $ecrRepoName`\"} }, \"spec\":{\"selector\":{\"pod-template-hash\":\"`echo $podHash`\",\"run\":\"`echo $ecrRepoName`\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > ~jenkins/tmp/expose_service.json"
+					sh "echo '{\"kind\":\"Service\", \"apiVersion\":\"v1\", \"metadata\":{ \"name\":\"capstone-server\", \"labels\":{ \"pod-template-hash\":\"$podHash\", \"run\":\"$ecrRepoName\"} }, \"spec\":{\"selector\":{\"pod-template-hash\":\"$podHash\",\"run\":\"$ecrRepoName\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > ~jenkins/tmp/expose_service.json"
 					
 					
 					
