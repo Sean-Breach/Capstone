@@ -28,20 +28,20 @@ pipeline {
 			sh "pylint --disable=R,C,W1203 ./web.py"
 		}
 	}
-	stage('Build Docker Container') {
+	stage('Build Image') {
 		steps {
 			sh "echo 'Build Docker Image'"
 			sh "docker build --tag=python_website ."
 		}
 	}
 
-	stage('Security Scan') {
+	stage('Image Security Scan') {
 		steps {
 			sh "echo 'Checking Security with Aqua MicroScanner'"
 			aquaMicroscanner(imageName: "alpine:latest", notCompliesCmd: "exit 1", onDisallowed: "fail", outputFormat: "html")
 		}
 	}
-	stage('Push Image') {
+	stage('Push Image to Amazon ECR') {
 		steps {
 			sh "echo 'Get Login Token for Pushing Docker Image to Amazon ECR'"
 			sh "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ecrURI"
@@ -56,23 +56,23 @@ pipeline {
 		}
 	}
 
-	stage('Setup EKS') {
+	stage('Setup EKS Cluster Connection') {
 		steps {
 			sh "echo 'Get EKS kubeconfig'"
 			sh "aws eks --region us-west-2 update-kubeconfig --name capstone-ekscluster"
 			sh "echo 'EKS is Setup'"
 		}
 	}
-	stage('Deploy container') {
+	stage('Deploy Amazon ECR Image to Kubernetes Cluster') {
 		steps {
 			sh "echo 'Check if Pod has Previously been Deployed'"
-			podName = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
 			script {
+				podName = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 				if (podName.isEmpty()) {
 					sh "echo 'No Pod Deployed. Deploying Now'"
 					sh "kubectl run `echo $ecrRepoName` --image=`echo $ecrURL`:`echo $buildID` --replicas=1 --port=8080"
-					podName = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
-					podHash = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
+					podName = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
+					podHash = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 				} else {
 					sh "echo 'Previous Pod Deployment Found'"
 					sh "echo 'Set New Image to Deployed Pod'"
@@ -80,23 +80,21 @@ pipeline {
 					sh "echo 'Restart Pod to Update Image'"
 					sh "kubectl rollout restart deployment/$ecrRepoName"
 					sh "echo 'Get Pod\'s New Name and Hash'"
-					podName = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
-					podHash = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
+					podName = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
+					podHash = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 				}
-			}
-			sh "echo 'Check if Pod Service has Previously been Deployed'"
-			eksService = sh "kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'"
-			script {
+				sh "echo 'Check if Pod Service has Previously been Deployed'"
+				eksService = sh "kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'"
 				if (ekService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
 					sh "kubectl expose pod $podName --port=8080 --target-port=80 --type=\"LoadBalancer\" --name=capstone-server"
-					eksService = sh "kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'"
+					eksService = sh(script: "kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'", returnStdout: true)
 				} else {
 					sh "echo 'Pod Service Found. Patching with New Pod Hash'"
 					sh "kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
 				}
+				sh "echo 'Deployment Complete!'"
 			}
-			sh "echo 'Deployment Complete!'"
 		}
 	}
   }
