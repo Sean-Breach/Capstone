@@ -1,5 +1,6 @@
 // Global Variable for Retaining a Constant Build ID
 def buildID = ""
+def dockerImageID = ""
 def ecrURI = ""
 def ecrRepoName = "capstone-ecr"
 def eksService = ""
@@ -46,9 +47,11 @@ pipeline {
 			sh "echo 'Get Login Token for Pushing Docker Image to Amazon ECR'"
 			sh "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ecrURI"
 			sh "echo 'Get Docker Image ID'"
-			sh "imageID=`docker images -q python_website`"
-			sh "echo 'Tag Docker Image Before Pushing to Amazon ECR (Build ID: $buildID, Image ID: $/$imageID/$)'"
-			sh "docker tag `echo $/$imageID/$` $ecrURI:$buildID"
+			script {
+				dockerImageID = sh(script: 'docker images -q python_website', returnStdout: true)
+			}
+			sh "echo 'Tag Docker Image Before Pushing to Amazon ECR (Build ID: $buildID, Image ID: $imageID)'"
+			sh "docker tag $imageID $ecrURI:$buildID"
 			sh "echo 'Push Docker Image to Amazon ECR'"
 			sh "docker push $ecrURI"
 		}
