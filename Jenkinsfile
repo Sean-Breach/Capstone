@@ -98,10 +98,12 @@ pipeline {
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "echo '{\"kind\":\"Service\", \"apiVersion\":\"v1\", \"metadata\":{ \"name\":\"capstone-server\", \"labels\":{ \"pod-template-hash\":\"$podHash\", \"run\":\"$ecrRepoName\"} }, \"spec\":{\"selector\":{\"pod-template-hash\":\"$podHash\",\"run\":\"$ecrRepoName\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > expose_service.json"
+					sh "echo '{\"kind\":\"Service\", \"apiVersion\":\"v1\", \"metadata\":{ \"name\":\"capstone-server\", \"labels\":{ \"pod-template-hash\":\"$podHash\", \"run\":\"$ecrRepoName\"} }, \"spec\":{\"selector\":{\"pod-template-hash\":\"$podHash\",\"run\":\"$ecrRepoName\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > ~ubuntu/tmp/expose_service.json"
+					
+					
 					
 					retry(5) {
-						sh "~/bin/kubectl apply -f expose_service.json"
+						sh "~/bin/kubectl apply -f ~ubuntu/tmp/expose_service.json"
 					}
 				/*	
 					script {
