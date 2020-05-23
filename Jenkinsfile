@@ -97,29 +97,20 @@ pipeline {
 					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true)
 				}
 				if (eksService.isEmpty() && !podName.isEmpty()) {
-					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					//sh "echo '{\"kind\":\"Service\", \"apiVersion\":\"v1\", \"metadata\":{ \"name\":\"capstone-server\", \"labels\":{ \"pod-template-hash\":\"$podHash\", \"run\":\"$ecrRepoName\"} }, \"spec\":{\"selector\":{\"pod-template-hash\":\"$podHash\",\"run\":\"$ecrRepoName\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > ~jenkins/tmp/expose_service.json"
-					
-					retry(5) {
-						sh "~/bin/kubectl expose pod $podName --port=80 --target-port=80 --type=LoadBalancer --name=capstone-server"
-						//sh "~/bin/kubectl apply -f ~jenkins/tmp/expose_service.json"
-					}
-				/*	
-					script {
-						eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true)
-					}
-				*/
-				} else {
-					//sh "echo 'Pod Service Found. Patching with New Pod Hash'"
-					//sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
+					sh "~/bin/kubectl expose pod $podName --port=80 --target-port=80 --type=LoadBalancer --name=capstone-server"
 				}
-				/*
+				script {
+					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[0] | select(.metadata.name == \"$podName\").metadata.name'", returnStdout: true)
+				}
+				} else {
+					sh "echo 'Pod Service Found. Patching with New Pod Hash'"
+					sh "~/bin/kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
+				}
 				script {
 					serviceAddress = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"$podName\").status.loadBalancer'", returnStdout: true)
 				}
 				sh "echo 'Deployment Complete!'"
 				sh "echo 'View Page Here: http://$serviceAddress:8080'"
-				*/
 			}
 		}
 	}
