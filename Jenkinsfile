@@ -17,7 +17,6 @@ pipeline {
 				buildID = sh(script: 'echo `date +%Y-%m-%dT%H.%M.%S`', returnStdout: true)
 				ecrURI = sh(script: "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'", returnStdout: true)
 			}
-			//ecrURI = sh(script: "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == '$ecrRepoName').repositoryUri", returnStdout: true)
 			sh "echo 'Build ID: $buildID, ECR URI: $ecrURI'"
 		}
 	}
@@ -50,8 +49,8 @@ pipeline {
 			script {
 				dockerImageID = sh(script: 'echo `docker images -q python_website`', returnStdout: true)
 			}
-			sh "echo 'Tag Docker Image Before Pushing to Amazon ECR (Build ID: $buildID, Image ID: $imageID)'"
-			sh "docker tag $imageID $ecrURI:$buildID"
+			sh "echo 'Tag Docker Image Before Pushing to Amazon ECR (Build ID: $buildID, Image ID: $dockerImageID)'"
+			sh "docker tag $dockerImageID $ecrURI:$buildID"
 			sh "echo 'Push Docker Image to Amazon ECR'"
 			sh "docker push $ecrURI"
 		}
