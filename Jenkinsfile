@@ -63,7 +63,6 @@ pipeline {
 			sh "echo 'EKS is Setup'"
 		}
 	}
-/*
 	stage('Deploy container') {
 		steps {
 			sh "echo 'Check if Pod has Previously been Deployed'"
@@ -71,35 +70,34 @@ pipeline {
 			script {
 				if (podName.isEmpty()) {
 					sh "echo 'No Pod Deployed. Deploying Now'"
-					sh "kubectl run $ecrRepoName --image=$ecrURL:$buildID --replicas=1 --port=8080"
+					sh "kubectl run `echo $ecrRepoName` --image=`echo $ecrURL`:`echo $buildID` --replicas=1 --port=8080"
 					podName = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
 					podHash = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
 				} else {
 					sh "echo 'Previous Pod Deployment Found'"
 					sh "echo 'Set New Image to Deployed Pod'"
-					sh "kubectl set image deployment/$ecrRepoName $ecrRepoName=$ecrURL:$buildID"
+					sh "kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURL`:`echo $buildID`"
 					sh "echo 'Restart Pod to Update Image'"
 					sh "kubectl rollout restart deployment/$ecrRepoName"
-					sh "echo 'Get Pod's New Name and Hash'"
+					sh "echo 'Get Pod\'s New Name and Hash'"
 					podName = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
 					podHash = sh "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'"
 				}
 			}
-			sh "ech 'Check if Pod Service has Previously been Deployed'"
+			sh "echo 'Check if Pod Service has Previously been Deployed'"
 			eksService = sh "kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'"
 			script {
 				if (ekService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "kubectl expose pod $podName --port=8080 --target-port=80 --type="LoadBalancer" --name=capstone-server"
+					sh "kubectl expose pod $podName --port=8080 --target-port=80 --type=\"LoadBalancer\" --name=capstone-server"
 					eksService = sh "kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'"
 				} else {
 					sh "echo 'Pod Service Found. Patching with New Pod Hash'"
 					sh "kubectl patch svc capstone-server -p '{\"metadata\": {\"labels\": {\"pod-template-hash\": \"$podHash\"}},\"spec\": {\"selector\": {\"pod-template-hash\": \"$podHash\"}}}'"
 				}
 			}
-			sh "echo 'Deployment Complete'"
+			sh "echo 'Deployment Complete!'"
 		}
 	}
-*/
   }
 }
