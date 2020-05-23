@@ -19,6 +19,9 @@ pipeline {
 				ecrURI = sh(script: "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'", returnStdout: true)
 			}
 			sh "echo 'Build ID: $buildID, ECR URI: $ecrURI'"
+			
+			sh "echo '{\"kind\":\"Service\", \"apiVersion\":\"v1\", \"metadata\":{ \"name\":\"capstone-server\", \"labels\":{ \"pod-template-hash\":\"$podHash\", \"run\":\"`echo $ecrRepoName`\"} }, \"spec\":{\"selector\":{\"pod-template-hash\":\"`echo $podHash`\",\"run\":\"`echo $ecrRepoName`\"},\"ports\":[{\"port\":8080,\"targetPort\":80}],\"type\":\"LoadBalancer\"}}' > ~jenkins/tmp/expose_service.json"
+					
 		}
 	}
 	stage('Lint Repo') {
