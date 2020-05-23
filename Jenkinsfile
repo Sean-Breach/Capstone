@@ -87,7 +87,7 @@ pipeline {
 				eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'", returnStdout: true)
 				if (eksService.isEmpty() && !podName.isEmpty()) {
 					sh "echo 'Pod Service not Found. Setting up Service for Pod'"
-					sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type=\"LoadBalancer\" --name=capstone-server"
+					sh "~/bin/kubectl expose pod $podName --port=8080 --target-port=80 --type='LoadBalancer' --name=capstone-server"
 					eksService = sh(script: "~/bin/kubectl get services --output=json | jq -r '.items[] | select(.metadata.name == \"capstone-server\").metadata.name'", returnStdout: true)
 				} else {
 					sh "echo 'Pod Service Found. Patching with New Pod Hash'"
