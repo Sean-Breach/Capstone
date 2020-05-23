@@ -86,7 +86,7 @@ pipeline {
 					sh "~/bin/kubectl rollout restart deployment/$ecrRepoName"
 					sh "echo 'Get Pods New Name and Hash'"
 					script {
-						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | sort_by(.metadata.creationTimestamp)[-1].metadata.name'", returnStdout: true)
+						podName = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | sort_by(.metadata.creationTimestamp)[0].metadata.name'", returnStdout: true)
 						podHash = sh(script: "~/bin/kubectl get pods --output=json | jq -r '.items[0] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 					}
 					sh "echo '$podName'"
