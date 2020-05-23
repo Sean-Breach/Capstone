@@ -12,7 +12,11 @@ pipeline {
 	stage('Setup Global Parameters'){
 		steps {
 			sh "echo 'Getting Timestamp'"
-			buildID = 'Hello'//sh (script: "echo date +%Y-%m-%dT%H.%M.%S", returnStdout: true).toString().trim()
+			buildID = """${sh(
+                returnStdout: true,
+                script: 'echo "clang"'
+            )}""" 
+			//"echo date +%Y-%m-%dT%H.%M.%S", returnStdout: true).toString().trim()
 			sh "echo 'Build ID: ${buildID}'"
 			//ecrURI = "aws ecr describe-repositories --output json | jq -r '.repositories[] | select(.repositoryName == \"$ecrRepoName\").repositoryUri'"
 		}
