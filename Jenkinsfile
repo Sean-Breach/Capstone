@@ -69,14 +69,14 @@ pipeline {
 			script {
 				podName = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 				if (podName.isEmpty()) {
-					sh "echo 'No Pod Deployed. Deploying Now'"
-					sh "kubectl run `echo $ecrRepoName` --image=`echo $ecrURL`:`echo $buildID` --replicas=1 --port=8080"
+					sh "echo 'No Pod Deployed. Deploying Now'")
+					sh "kubectl run `echo $ecrRepoName` --image=`echo $ecrURI`:`echo $buildID` --replicas=1 --port=8080"
 					podName = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 					podHash = sh(script: "kubectl get pods --output=json | jq -r '.items[] | select(.metadata.labels.run == \"$ecrRepoName\").metadata.labels.\"pod-template-hash\"'", returnStdout: true)
 				} else {
 					sh "echo 'Previous Pod Deployment Found'"
 					sh "echo 'Set New Image to Deployed Pod'"
-					sh "kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURL`:`echo $buildID`"
+					sh "kubectl set image deployment/`echo $ecrRepoName` `echo $ecrRepoName`=`echo $ecrURI`:`echo $buildID`"
 					sh "echo 'Restart Pod to Update Image'"
 					sh "kubectl rollout restart deployment/$ecrRepoName"
 					sh "echo 'Get Pod\'s New Name and Hash'"
