@@ -34,13 +34,14 @@ pipeline {
 			sh "docker build --tag=python_website ."
 		}
 	}
-/*
+
 	stage('Security Scan') {
 		steps {
 			sh "echo 'Checking Security with Aqua MicroScanner'"
 			aquaMicroscanner(imageName: "alpine:latest", notCompliesCmd: "exit 1", onDisallowed: "fail", outputFormat: "html")
 		}
 	}
+/*
 	stage('Push Image') {
 		steps {
 			sh "echo 'Get Login Token for Pushing Docker Image to Amazon ECR'"
